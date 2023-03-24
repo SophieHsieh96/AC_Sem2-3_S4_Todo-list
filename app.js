@@ -4,6 +4,8 @@ const mongoose = require('mongoose') //載入mongoose
 const exphbs = require('express-handlebars')
 const app = express()
 const Todo = require('./models/todo')
+const bodyParser = require('body-parser')
+
 
 
 // 僅在非正式環境時，使用 dotenv
@@ -28,6 +30,8 @@ db.once('open', () => {
 app.engine('hbs', exphbs({ defaultLayout: 'main', extname: '.hbs'}))
 app.set('view engine', 'hbs')
 
+app.use(bodyParser.urlencoded({ extended: true }))
+
 //設定首頁路由
 app.get('/', (req, res) => {
     Todo.find() //取出 Todo model 所有資料
@@ -35,6 +39,20 @@ app.get('/', (req, res) => {
         .then(todos => res.render('index', {todos})) //將資料傳給Index樣板
         .catch(error => console.log(error)) //錯誤處理
 })
+
+app.get('/todos/new', (req, res) => {
+    return res.render('new')
+})
+
+
+app.post('/todos', (req, res) =>{
+    const name = req.body.name           //get name record from req.body
+    return Todo.create({ name })         // save to dataBase
+        .then(() => res.redirect('/'))    // finish creation then back home page
+        .catch(error => console.log(error))
+})
+
+
 
 //設定port 3000
 app.listen(3000, () =>{
